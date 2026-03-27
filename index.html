@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="https://i.imgur.com/0Yw1FxJ.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mont Azul Sales Intelligence Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'bg-primary': 'var(--bg-primary)',
+              'bg-secondary': 'var(--bg-secondary)',
+              'surface': 'var(--surface)',
+              'primary': 'var(--primary)',
+              'secondary': 'var(--secondary)',
+              'text-primary': 'var(--text-primary)',
+              'text-secondary': 'var(--text-secondary)',
+              'border-color': 'var(--border-color)',
+              'profit-color': 'var(--profit-color)',
+              'loss-color': 'var(--loss-color)',
+              'profit-bg': 'var(--profit-bg)',
+              'loss-bg': 'var(--loss-bg)',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <!--
+        SECURITY WARNING: Hardcoded API key below. 
+        This was reverted as requested but is a security risk.
+    -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD2ZWbkHzrCUGTHwHwqK9v2dNj6XGINTE&loading=async" defer></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "@/": "/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "xlsx": "https://aistudiocdn.com/xlsx@^0.18.5",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.0-beta.23",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "vite": "https://aistudiocdn.com/vite@^7.1.12",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.0",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
+    "zustand/middleware": "https://aistudiocdn.com/zustand@^5.0.8/middleware.mjs",
+    "immer": "https://aistudiocdn.com/immer@^10.2.0",
+    "zod": "https://aistudiocdn.com/zod@^3.23.8",
+    "date-fns": "https://aistudiocdn.com/date-fns@^4.1.0",
+    "react-error-boundary": "https://aistudiocdn.com/react-error-boundary@^6.0.0",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "buffer": "https://aistudiocdn.com/buffer@^6.0.3",
+    "node-fetch": "https://aistudiocdn.com/node-fetch@^3.3.2",
+    "firebase-admin": "https://aistudiocdn.com/firebase-admin@^13.6.0",
+    "firebase-functions/": "https://aistudiocdn.com/firebase-functions@^7.0.0/",
+    "puppeteer-core": "https://aistudiocdn.com/puppeteer-core@^24.30.0",
+    "@sparticuz/chromium": "https://aistudiocdn.com/@sparticuz/chromium@^141.0.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/main.css">
+<style>
+:root {
+    --font-main: 'Exo 2', sans-serif;
+}
+
+.dark {
+    --bg-primary: #121212;
+    --bg-secondary: #1E1E1E;
+    --surface: #292929;
+    --primary: #87CEEB; /* Sky Blue */
+    --secondary: #FFA500; /* Vibrant Orange */
+    --text-primary: #EAEAEA;
+    --text-secondary: #A0A0A0;
+    --border-color: #404040;
+    --profit-color: #33FF99;
+    --loss-color: #FF4D4D;
+    --profit-bg: rgba(51, 255, 153, 0.1);
+    --loss-bg: rgba(255, 77, 77, 0.1);
+}
+
+.light {
+    --bg-primary: #F0F2F5;
+    --bg-secondary: #FFFFFF;
+    --surface: #F8F9FA;
+    --primary: #2980B9; /* Strong Blue */
+    --secondary: #E67E22; /* Strong Orange */
+    --text-primary: #2C3E50;
+    --text-secondary: #596a7a;
+    --border-color: #DEE2E6;
+    --profit-color: #2ECC71;
+    --loss-color: #E74C3C;
+    --profit-bg: rgba(46, 204, 113, 0.1);
+    --loss-bg: rgba(231, 76, 60, 0.1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 400;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background-color: var(--primary); border-radius: 4px; }
+
+#root {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+img[alt*="Mont Azul Logo"] {
+    object-fit: contain;
+}
+
+h2, h3, h4 { letter-spacing: 0.5px; color: var(--text-primary); font-weight: 600; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+
+.panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+.dark .panel { box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.light .panel { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+/* Main App Layout */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    height: auto; /* Changed from 100vh to allow footer */
+}
+
+/* Buttons */
+.btn {
+    background-color: var(--primary); color: var(--bg-secondary); border: 1px solid var(--primary); border-radius: 6px;
+    padding: 10px 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+    transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { background-color: var(--text-secondary); border-color: var(--text-secondary); cursor: not-allowed; opacity: 0.5; }
+.btn.secondary { background-color: var(--secondary); border-color: var(--secondary); }
+.btn.tertiary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+.btn.tertiary:hover { background: var(--surface); border-color: var(--primary); color: var(--primary); }
+.btn.green { background-color: var(--profit-color); border-color: var(--profit-color); color: var(--bg-primary);}
+.btn.red { background-color: var(--loss-color); border-color: var(--loss-color); color: #fff;}
+.btn.sm { padding: 6px 12px; font-size: 0.8em; }
+
+/* Sidebar Navigation */
+#sidebar-nav .nav-button { justify-content: flex-start; background: transparent; color: var(--text-secondary); border-radius: 6px;
+    padding: 10px 1rem; border: none; }
+#sidebar-nav .nav-button:hover { background: var(--surface); color: var(--text-primary); }
+#sidebar-nav .nav-button[class*="active"] { background: var(--primary); color: var(--bg-secondary); font-weight: 600; }
+
+/* Form Elements */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.form-group label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.9em; }
+input, textarea, select { background-color: var(--surface); border: 1px solid var(--border-color);
+    border-radius: 6px; padding: 10px; color: var(--text-primary); width: 100%; transition: all 0.2s ease; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background-color: var(--bg-secondary); }
+
+/* Auth Screen */
+.auth-container { border: 1px solid var(--border-color); width: 100%; max-width: 400px; padding: 2rem; background-color: var(--bg-secondary); border-radius: 8px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; text-align: left; border: 1px solid var(--border-color); }
+th { color: var(--text-primary); background-color: var(--surface); text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
+tbody tr:hover { background-color: var(--surface); }
+
+/* Modal Styles */
+.modal { z-index: 9999; position: fixed; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+.modal-content { background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color); width: 100%; max-width: 500px; display: flex; flex-direction: column; max-height: 90vh; }
+.modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display:flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { margin: 0; border: none; padding: 0; }
+.modal-body { overflow-y: auto; padding: 1.5rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+/* Products View - Card Redesign */
+.product-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; }
+.product-card img { width: 100%; height: 150px; object-fit: cover; border-top-left-radius: 7px; border-top-right-radius: 7px;}
+.product-card-content { flex-grow: 1; display: flex; flex-direction: column; padding: 1rem; }
+.product-card-content h4 { margin-bottom: 0.5rem; border: none; }
+.product-card-description { font-size: 0.9em; color: var(--text-secondary); flex-grow: 1; }
+.product-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+.product-price { font-size: 1.2em; font-weight: bold; color: var(--primary); }
+
+/* Dashboard */
+.dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; height: 100%; grid-template-rows: minmax(0, 1fr); }
+.project-card-grid { display: grid; grid-template-columns: 2fr 1fr 1fr auto; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color); gap: 1rem; transition: background-color 0.2s; }
+.project-card-grid:hover { background-color: var(--surface); }
+.project-status-badge { padding: 4px 10px; color: var(--bg-secondary); font-weight: 600; text-align: center; font-size: 0.8em; text-transform: uppercase; border-radius: 12px;}
+
+/* Profit/Loss Analysis Box */
+.profit-analysis-box { padding: 1rem; border-radius: 6px; text-align: center; }
+.profit-analysis-box.profit { background-color: var(--profit-bg); border: 1px solid var(--profit-color); color: var(--profit-color); }
+.profit-analysis-box.loss { background-color: var(--loss-bg); border: 1px solid var(--loss-color); color: var(--loss-color); }
+.profit-analysis-box div:first-child { font-size: 1.5em; font-weight: 700; }
+.profit-analysis-box div:last-child { font-size: 1em; opacity: 0.9; }
+
+.loader {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 3px solid var(--surface);
+    border-top-color: var(--primary);
+    animation: rotation 1s infinite linear;
+}
+@keyframes rotation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (min-width: 1024px) {
+    .masonry-3-col { column-count: 3; column-gap: 1.5rem; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    .masonry-3-col { column-count: 2; column-gap: 1.5rem; }
+}
+.masonry-3-col > * { break-inside: avoid; margin-bottom: 1.5rem; }
+
+/* New Pricing Analysis Card Styles */
+.pricing-card {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.pricing-card h3 {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+.pricing-section {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+}
+.pricing-section-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+.cost-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 1rem;
+    align-items: center;
+}
+.pricing-tiers {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+.pricing-tier {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 6px;
+}
+.pricing-tier-header {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+.tier-results {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-top: 1rem;
+}
+.tier-result-value {
+    font-weight: 700;
+    font-size: 1.5em;
+    line-height: 1.2;
+}
+.tier-result-label {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}
+.margin-profit {
+    color: var(--profit-color);
+}
+.margin-loss {
+    color: var(--loss-color);
+}
+
+.highlight-change {
+    background-color: var(--profit-bg) !important;
+    padding: 2px 4px;
+    border-radius: 4px;
+    animation: fadeInHighlight 1.5s ease-out;
+}
+
+@keyframes fadeInHighlight {
+    from { background-color: var(--primary); }
+    to { background-color: var(--profit-bg); }
+}
+</style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

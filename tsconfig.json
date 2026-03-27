@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "server",
+    "dataMinerService.ts",
+    "services/dataMinerService.ts",
+    "hooks/useDraggableAndResizable.ts",
+    "components/admin/ClickSendAccountModal.tsx",
+    "components/common/InteractiveMap.tsx",
+    "components/common/MarkAsSentModal.tsx",
+    "components/common/NewsFeed.tsx",
+    "components/products/CompetitorProductModal.tsx",
+    "components/leads/ContactVerificationModal.tsx",
+    "components/leads/DynamicDossierView.tsx",
+    "components/RecipeCard.tsx",
+    "components/Spinner.tsx",
+    "views/CompetitorIntelView.tsx",
+    "views/IntegrationView.tsx",
+    "views/intelligence/DynamicDossierView.tsx",
+    "ErrorBoundary.tsx",
+    "services/ai/aiUtils.ts",
+    "services/ai/competitorService.ts",
+    "services/ai/contactValidator.ts",
+    "services/ai/surveyorService.ts",
+    "services/geminiService.ts",
+    "services/textmagicService.ts",
+    "services/twilioService.ts"
+  ]
+}
